@@ -5,10 +5,14 @@ import com.invoicePro.auth.request.OnboardingRequest;
 import com.invoicePro.auth.service.GoogleAuthService;
 import com.invoicePro.entity.Business;
 import com.invoicePro.entity.BusinessOwner;
+import com.invoicePro.entity.PasswordResetToken;
 import com.invoicePro.exception.ResourceNotFoundException;
 import com.invoicePro.repository.BusinessOwnerRepository;
 import com.invoicePro.repository.BusinessRepository;
+import com.invoicePro.repository.PasswordResetTokenRepository;
 import com.invoicePro.security.userDetails.BusinessOwnerDetails;
+import com.invoicePro.utils.PasswordResetTokenUtils;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,6 +54,10 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
     private final RestTemplate restTemplate = new RestTemplate();
     private final BusinessOwnerRepository businessOwnerRepository;
     private final BusinessRepository businessRepository;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final PasswordResetTokenUtils passwordResetTokenUtils;
+
+    private static final int TOKEN_EXPIRY_MINUTES = 5;
 
     @Override
     public String handleSignUp(String authorizationCode) throws BadRequestException {
@@ -119,30 +127,63 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
     public String forgotPassword(String authorizationCode) throws BadRequestException {
 
         String email = handleSignUp(authorizationCode);
-        Optional<BusinessOwner> businessOwnerOptional = businessOwnerRepository.findByEmailId(email);
-        if (businessOwnerOptional.isEmpty()) {
-            throw new BadRequestException("No business owner found with the provided email, Please Register first.");
-        }
-        return email;
+        validateBusinessOwnerAndGetIt(email);
+        String token = passwordResetTokenUtils.generateToken(email);
+
+        PasswordResetToken passwordResetToken = PasswordResetToken.builder()
+                .token(token)
+                .email(email)
+                .createdAt(LocalDateTime.now())
+                .expiresAt(LocalDateTime.now().plusMinutes(TOKEN_EXPIRY_MINUTES))
+                .isUsed(false)
+                .build();
+
+        passwordResetTokenRepository.save(passwordResetToken);
+        return token;
     }
 
     @Override
-    public String changePassword(ChangePasswordRequest changePasswordRequest) throws BadRequestException {
+    @Transactional
+    public String changePassword(String passwordResetToken, ChangePasswordRequest changePasswordRequest) throws BadRequestException {
+        validatePasswordResetToken(passwordResetToken);
+        String email = passwordResetTokenUtils.extractEmailFromToken(passwordResetToken);
 
-        Optional<BusinessOwner> businessOwnerOptional = businessOwnerRepository.findByEmailId(changePasswordRequest.getEmail());
-        if (businessOwnerOptional.isEmpty()) {
-            throw new BadRequestException("No business owner found with the provided email, Please Register first.");
-        }
-        BusinessOwner businessOwner = businessOwnerOptional.get();
+        BusinessOwner businessOwner = validateBusinessOwnerAndGetIt(email);
+
         if (!changePasswordRequest.getNewPassword().equals(changePasswordRequest.getConfirmPassword())) {
             throw new IllegalArgumentException("New password and Confirm password do not match.");
         }
         businessOwner.setPassword(getEncryptedPassword(changePasswordRequest.getNewPassword()));
         businessOwner.setUpdatedAt(LocalDateTime.now());
-        businessOwner.setUpdatedBy(getCurrentBusinessOwner().getId());
+        businessOwner.setUpdatedBy(businessOwner.getId());
         businessOwnerRepository.save(businessOwner);
 
         return "Password changed successfully!";
+    }
+
+    private BusinessOwner validateBusinessOwnerAndGetIt(String email) throws BadRequestException {
+        Optional<BusinessOwner> businessOwnerOptional = businessOwnerRepository.findByEmailId(email);
+        if (businessOwnerOptional.isEmpty()) {
+            throw new BadRequestException("No business owner found with the provided email, Please Register first.");
+        }
+        return businessOwnerOptional.get();
+    }
+
+    private void validatePasswordResetToken(String passwordResetToken) throws BadRequestException {
+        Optional<PasswordResetToken> tokenOptional = passwordResetTokenRepository.findByToken(passwordResetToken);
+        if (tokenOptional.isEmpty()) {
+            throw new BadRequestException("Invalid password reset token.");
+        }
+        PasswordResetToken token = tokenOptional.get();
+        if (token.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Password reset token has expired.");
+        }
+        if (token.isUsed()) {
+            throw new BadRequestException("This password reset token already has been used.");
+        }
+        // Mark the token as used
+        token.setUsed(true);
+        passwordResetTokenRepository.save(token);
     }
 
     private static String getEncryptedPassword(String password) {

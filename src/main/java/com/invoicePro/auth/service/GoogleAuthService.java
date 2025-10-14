@@ -12,5 +12,5 @@ public interface GoogleAuthService {
 
     String forgotPassword(String authorizationCode) throws BadRequestException;
 
-    String changePassword(ChangePasswordRequest changePasswordRequest) throws BadRequestException;
+    String changePassword(String passwordResetToken, ChangePasswordRequest changePasswordRequest) throws BadRequestException;
 }

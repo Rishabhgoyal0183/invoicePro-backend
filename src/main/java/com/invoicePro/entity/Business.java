@@ -16,13 +16,18 @@ import java.time.LocalDateTime;
                 @UniqueConstraint(name = "ux_businesses_owner_name", columnNames = {"owner_id", "name"})
         }
 )
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(onlyExplicitlyIncluded = true)
 public class Business {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
+    @ToString.Include
     private Long id;
 
     // owning side of relationship
