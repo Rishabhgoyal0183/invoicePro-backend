@@ -2,9 +2,11 @@ package com.invoicePro.auth.service.impl;
 
 import com.invoicePro.auth.request.LoginRequest;
 import com.invoicePro.auth.service.AuthService;
+import com.invoicePro.entity.Business;
 import com.invoicePro.entity.BusinessOwner;
 import com.invoicePro.exception.ResourceNotFoundException;
 import com.invoicePro.repository.BusinessOwnerRepository;
+import com.invoicePro.repository.BusinessRepository;
 import com.invoicePro.response.AuthResponse;
 import com.invoicePro.security.jwt.JwtUtils;
 import com.invoicePro.security.userDetails.BusinessOwnerDetails;
@@ -17,6 +19,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -28,6 +33,8 @@ public class AuthServiceImpl implements AuthService {
     private final JwtUtils jwtUtils;
 
     private final BusinessOwnerRepository businessOwnerRepository;
+
+    private final BusinessRepository businessRepository;
 
     @Override
     public AuthResponse login(LoginRequest loginRequest) {
@@ -49,15 +56,27 @@ public class AuthServiceImpl implements AuthService {
         BusinessOwner businessOwner = businessOwnerRepository.findById(businessOwnerDetails.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Business Owner not found"));
 
-        // Create AuthResponse with user details and JWT
-        AuthResponse authResponse = new AuthResponse();
-        authResponse.setAccessToken(jwt);
-        authResponse.setBusinessOwnerName(businessOwner.getFullName());
-        authResponse.setBusinessOwnerEmail(businessOwnerDetails.getEmail());
-        authResponse.setBusinessOwnerPhoneNumber(businessOwnerDetails.getPhoneNumber());
-        authResponse.setBusinessOwnerId(businessOwnerDetails.getId());
+        List<Business> businessList = businessRepository.findByOwner(businessOwner);
 
-        return authResponse;
+        if (!businessList.isEmpty()){
+            // Create AuthResponse with user details and JWT
+            AuthResponse authResponse = new AuthResponse();
+            authResponse.setAccessToken(jwt);
+            authResponse.setBusinessOwnerName(businessOwner.getFullName());
+            authResponse.setBusinessOwnerEmail(businessOwnerDetails.getEmail());
+            authResponse.setBusinessOwnerPhoneNumber(businessOwnerDetails.getPhoneNumber());
+            authResponse.setBusinessOwnerId(businessOwnerDetails.getId());
+            authResponse.setBusinessCount(businessList.size());
+            authResponse.setBusinessDetails(getBusinessDetails(businessList));
+            return authResponse;
+        }
+        throw new ResourceNotFoundException("You don't have any business registered. Please contact to admin.");
+    }
+
+    private List<AuthResponse.BusinessDetails> getBusinessDetails(List<Business> businessList) {
+        return businessList.stream()
+                .map(business -> new AuthResponse.BusinessDetails(business.getId(), business.getName()))
+                .toList();
     }
 
     @Override
