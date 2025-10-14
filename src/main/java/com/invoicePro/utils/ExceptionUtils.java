@@ -2,6 +2,7 @@ package com.invoicePro.utils;
 
 import com.invoicePro.exception.ResourceNotFoundException;
 import com.invoicePro.response.Response;
+import org.apache.coyote.BadRequestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -9,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 
 import java.util.List;
@@ -24,7 +24,7 @@ public class ExceptionUtils {
                 exception instanceof ResourceNotFoundException ? HttpStatus.NOT_FOUND :
                         exception instanceof IllegalArgumentException ? HttpStatus.BAD_REQUEST :
                                 exception instanceof AccessDeniedException ? HttpStatus.FORBIDDEN :
-                                        exception instanceof BadCredentialsException ? HttpStatus.UNAUTHORIZED :
+                                        exception instanceof BadCredentialsException || exception instanceof BadRequestException ? HttpStatus.UNAUTHORIZED :
                                                 exception instanceof HttpClientErrorException httpEx ? (HttpStatus) httpEx.getStatusCode() :
                                                         (exception instanceof RestClientException) ? HttpStatus.SERVICE_UNAVAILABLE
                                                                 : HttpStatus.INTERNAL_SERVER_ERROR;
@@ -36,11 +36,12 @@ public class ExceptionUtils {
                                         exception instanceof BadCredentialsException ? "Invalid username or password." :
                                                 exception instanceof HttpClientErrorException httpEx ?
                                                         (!httpEx.getResponseBodyAsString().isBlank()
-                                                                ? "Remote server returned an error: " + httpEx.getResponseBodyAsString() +", Please try again later."
+                                                                ? "Remote server returned an error: " + httpEx.getResponseBodyAsString() + ", Please try again later."
                                                                 : "Remote server returned an error (" + httpEx.getStatusCode().value() + ")") :
                                                         (exception instanceof RestClientException) ?
                                                                 "Unable to connect to the remote server. Please try again later." :
-                                                                "Unexpected error, Please try again later.";
+                                                                exception instanceof BadRequestException ? exception.getMessage() :
+                                                                        "Unexpected error, Please try again later.";
 
         Response resp = Response.builder()
                 .status(status.value())

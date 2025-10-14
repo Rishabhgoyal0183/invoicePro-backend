@@ -1,6 +1,5 @@
 package com.invoicePro.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
@@ -16,14 +15,18 @@ import java.util.List;
 @Builder
 @Entity
 @Table(name = "business_owners")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(onlyExplicitlyIncluded = true)
 public class BusinessOwner {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
+    @ToString.Include
     private Long id;
 
     @OneToMany(
@@ -32,8 +35,9 @@ public class BusinessOwner {
             orphanRemoval = true,
             fetch = FetchType.LAZY
     )
-    @JsonManagedReference
     @Builder.Default
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<Business> businesses = new ArrayList<>();
 
     @Column(name = "first_name")

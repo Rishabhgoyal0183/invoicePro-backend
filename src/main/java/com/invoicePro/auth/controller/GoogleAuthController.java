@@ -54,11 +54,11 @@ public class GoogleAuthController {
     }
 
     @PostMapping("/change-password")
-    public ResponseEntity<Response> changePassword(@RequestBody @Valid ChangePasswordRequest changePasswordRequest,
+    public ResponseEntity<Response> changePassword(@RequestParam String passwordResetToken, @RequestBody @Valid ChangePasswordRequest changePasswordRequest,
                                                    BindingResult bindingResult) {
         RequestValidator.validateRequest(bindingResult);
         try {
-            String message = googleAuthService.changePassword(changePasswordRequest);
+            String message = googleAuthService.changePassword(passwordResetToken, changePasswordRequest);
 
             return ResponseUtils.data(message);
         } catch (Exception exception) {

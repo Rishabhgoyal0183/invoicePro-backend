@@ -1,6 +1,5 @@
 package com.invoicePro.auth.request;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -9,11 +8,7 @@ import lombok.Data;
 @Data
 public class ChangePasswordRequest {
 
-    @NotBlank(message = "Email is mandatory")
-    @Email(message = "Email should be valid")
-    private String email;
-
-    @NotBlank(message = "Old password is mandatory")
+    @NotBlank(message = "New password is mandatory")
     @Pattern(
             regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
             message = "New Password must contain at least one uppercase letter, one lowercase letter, one number, one special character, and be at least of 8 digits."
