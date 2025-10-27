@@ -26,8 +26,9 @@ public class ExceptionUtils {
                                 exception instanceof AccessDeniedException ? HttpStatus.FORBIDDEN :
                                         exception instanceof BadCredentialsException || exception instanceof BadRequestException ? HttpStatus.UNAUTHORIZED :
                                                 exception instanceof HttpClientErrorException httpEx ? (HttpStatus) httpEx.getStatusCode() :
-                                                        (exception instanceof RestClientException) ? HttpStatus.SERVICE_UNAVAILABLE
-                                                                : HttpStatus.INTERNAL_SERVER_ERROR;
+                                                        (exception instanceof RestClientException) ? HttpStatus.SERVICE_UNAVAILABLE :
+                                                                exception instanceof RuntimeException ? HttpStatus.NOT_ACCEPTABLE
+                                                                        : HttpStatus.INTERNAL_SERVER_ERROR;
 
         String message =
                 exception instanceof ResourceNotFoundException ? exception.getMessage() :
@@ -41,7 +42,8 @@ public class ExceptionUtils {
                                                         (exception instanceof RestClientException) ?
                                                                 "Unable to connect to the remote server. Please try again later." :
                                                                 exception instanceof BadRequestException ? exception.getMessage() :
-                                                                        "Unexpected error, Please try again later.";
+                                                                        exception instanceof RuntimeException ? exception.getMessage() :
+                                                                                "Unexpected error, Please try again later.";
 
         Response resp = Response.builder()
                 .status(status.value())

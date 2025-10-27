@@ -17,6 +17,18 @@ public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<Response> handleAllValidationException(ValidationException exception) {
+
+        log.error("An Validation error occurred", exception);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(
+                        Response.builder()
+                                .status(HttpStatus.BAD_REQUEST.value())
+                                .errors(exception.getErrors())
+                                .build());
+    }
+
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<Response> handleAllBadCredentialsException(BadCredentialsException exception) {
 
