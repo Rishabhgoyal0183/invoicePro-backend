@@ -1,5 +1,6 @@
 package com.invoicePro.mapper;
 
+import com.invoicePro.dto.CustomerByIdDTO;
 import com.invoicePro.dto.CustomersDTO;
 import com.invoicePro.entity.Customer;
 import org.springframework.stereotype.Component;
@@ -22,5 +23,21 @@ public class CustomerMapper {
         //                .mapToLong(invoice -> invoice.getTotalAmount().longValue())
         //                .sum()
         return dto;
+    }
+
+    public CustomerByIdDTO toByIdDTO(Customer customer) {
+
+        CustomerByIdDTO customerByIdDTO = new CustomerByIdDTO();
+        customerByIdDTO.setId(customer.getId());
+        customerByIdDTO.setName(customer.getName());
+        customerByIdDTO.setCustomerType(customer.getCustomerType());
+        customerByIdDTO.setEmailId(customer.getEmail());
+        customerByIdDTO.setPhoneNumber(customer.getPhone());
+        customerByIdDTO.setStatus(customer.getStatus());
+        customerByIdDTO.setAddress(customer.getAddress());
+        customerByIdDTO.setCity(customer.getCity());
+        customerByIdDTO.setState(customer.getState());
+        customerByIdDTO.setPinCode(customer.getPinCode());
+        return customerByIdDTO;
     }
 }

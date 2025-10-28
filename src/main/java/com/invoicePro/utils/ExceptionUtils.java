@@ -28,7 +28,7 @@ public class ExceptionUtils {
                                                 exception instanceof HttpClientErrorException httpEx ? (HttpStatus) httpEx.getStatusCode() :
                                                         (exception instanceof RestClientException) ? HttpStatus.SERVICE_UNAVAILABLE :
                                                                 exception instanceof RuntimeException ? HttpStatus.NOT_ACCEPTABLE
-                                                                        : HttpStatus.INTERNAL_SERVER_ERROR;
+                                                                                : HttpStatus.INTERNAL_SERVER_ERROR;
 
         String message =
                 exception instanceof ResourceNotFoundException ? exception.getMessage() :

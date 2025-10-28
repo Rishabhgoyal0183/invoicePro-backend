@@ -1,5 +1,6 @@
 package com.invoicePro.controller;
 
+import com.invoicePro.dto.CustomerByIdDTO;
 import com.invoicePro.dto.CustomersDTO;
 import com.invoicePro.request.PaginationRequest;
 import com.invoicePro.request.SaveCustomerRequest;
@@ -48,6 +49,57 @@ public class CustomerController {
             String message = customerService.saveCustomers(businessId, saveCustomerRequest);
             return ResponseUtils.data(message);
         }catch (Exception exception){
+            return ExceptionUtils.handleException(exception);
+        }
+    }
+
+    @GetMapping("/customers/{customerId}")
+    public ResponseEntity<Response> getCustomerById(@PathVariable long businessId,
+                                                   @PathVariable long customerId) {
+
+        try {
+            CustomerByIdDTO customerByIdDTO = customerService.getCustomerById(businessId, customerId);
+            return ResponseUtils.data(customerByIdDTO);
+        } catch (Exception exception) {
+            return ExceptionUtils.handleException(exception);
+        }
+    }
+
+    @PutMapping("/customers/{customerId}")
+    public ResponseEntity<Response> updateCustomer(@PathVariable long businessId,
+                                                   @PathVariable long customerId,
+                                                   @RequestBody @Valid SaveCustomerRequest saveCustomerRequest,
+                                                   BindingResult bindingResult) {
+        RequestValidator.validateRequest(bindingResult);
+
+        try {
+            String message = customerService.updateCustomer(businessId, customerId, saveCustomerRequest);
+            return ResponseUtils.data(message);
+        } catch (Exception exception) {
+            return ExceptionUtils.handleException(exception);
+        }
+    }
+
+    @PutMapping("/customers/{customerId}/change-status")
+    public ResponseEntity<Response> changeCustomerStatus(@PathVariable long businessId,
+                                                    @PathVariable long customerId) {
+
+        try {
+            String message = customerService.changeCustomerStatus(businessId, customerId);
+            return ResponseUtils.data(message);
+        } catch (Exception exception) {
+            return ExceptionUtils.handleException(exception);
+        }
+    }
+
+    @DeleteMapping("/customers/{customerId}/delete")
+    public ResponseEntity<Response> softDeleteCustomer(@PathVariable long businessId,
+                                                         @PathVariable long customerId) {
+
+        try {
+            String message = customerService.softDeleteCustomer(businessId, customerId);
+            return ResponseUtils.data(message);
+        } catch (Exception exception) {
             return ExceptionUtils.handleException(exception);
         }
     }

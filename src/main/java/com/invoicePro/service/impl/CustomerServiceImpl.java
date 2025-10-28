@@ -1,5 +1,6 @@
 package com.invoicePro.service.impl;
 
+import com.invoicePro.dto.CustomerByIdDTO;
 import com.invoicePro.dto.CustomersDTO;
 import com.invoicePro.entity.BusinessOwner;
 import com.invoicePro.entity.Customer;
@@ -15,6 +16,7 @@ import com.invoicePro.request.SaveCustomerRequest;
 import com.invoicePro.response.PageResponse;
 import com.invoicePro.security.userDetails.BusinessOwnerDetails;
 import com.invoicePro.service.CustomerService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -55,6 +57,7 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
+    @Transactional
     public String saveCustomers(long businessId, SaveCustomerRequest saveCustomerRequest) {
 
         businessRepository.findById(businessId)
@@ -84,6 +87,98 @@ public class CustomerServiceImpl implements CustomerService {
 
         return "Customer details saved successfully";
     }
+
+    @Override
+    @Transactional
+    public String updateCustomer(long businessId, long customerId, SaveCustomerRequest saveCustomerRequest) {
+        businessRepository.findById(businessId)
+                .orElseThrow(() -> new ResourceNotFoundException("Business not found, please create a business first"));
+
+        Customer customer = customerRepository.findByIdAndBusinessId(customerId, businessId)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+
+        if (!customer.getName().equals(saveCustomerRequest.getName())) {
+            customerRepository.findByNameAndBusinessIdAndIdNot(saveCustomerRequest.getName(), businessId, customerId)
+                    .ifPresent(c -> {
+                        throw new RuntimeException("Customer with name " + saveCustomerRequest.getName() + " already exists");
+                    });
+        }
+
+        if (customer.getStatus().equals(Status.INACTIVE)){
+            throw new RuntimeException("Cannot update details of an inactive customer, please activate the customer first");
+        }
+
+        customer.setName(saveCustomerRequest.getName());
+        customer.setCustomerType(CustomerType.valueOf(saveCustomerRequest.getCustomerType()));
+        customer.setEmail(saveCustomerRequest.getEmail());
+        customer.setPhone(saveCustomerRequest.getPhoneNumber());
+        customer.setAddress(saveCustomerRequest.getAddress());
+        customer.setCity(saveCustomerRequest.getCity());
+        customer.setState(saveCustomerRequest.getState());
+        customer.setPinCode(saveCustomerRequest.getPinCode());
+        customer.setUpdatedAt(LocalDateTime.now());
+        customer.setUpdatedBy(getCurrentBusinessOwner().getId());
+
+        customerRepository.save(customer);
+
+        return "Customer details updated successfully";
+    }
+
+    @Override
+    public CustomerByIdDTO getCustomerById(long businessId, long customerId) {
+
+        businessRepository.findById(businessId)
+                .orElseThrow(() -> new ResourceNotFoundException("Business not found, please create a business first"));
+
+        Customer customer = customerRepository.findByIdAndBusinessId(customerId, businessId)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+
+        return customerMapper.toByIdDTO(customer);
+    }
+
+    @Override
+    @Transactional
+    public String changeCustomerStatus(long businessId, long customerId) {
+        businessRepository.findById(businessId)
+                .orElseThrow(() -> new ResourceNotFoundException("Business not found, please create a business first"));
+
+        Customer customer = customerRepository.findByIdAndBusinessId(customerId, businessId)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+
+        if (customer.getStatus() == Status.ACTIVE) {
+            customer.setStatus(Status.INACTIVE);
+        } else if (customer.getStatus() == Status.INACTIVE) {
+            customer.setStatus(Status.ACTIVE);
+        } else {
+            throw new RuntimeException("Cannot change status of deleted customer");
+        }
+
+        customer.setUpdatedAt(LocalDateTime.now());
+        customer.setUpdatedBy(getCurrentBusinessOwner().getId());
+
+        customerRepository.save(customer);
+
+        return "Customer status changed successfully to " + customer.getStatus();
+    }
+
+    @Override
+    @Transactional
+    public String softDeleteCustomer(long businessId, long customerId) {
+        businessRepository.findById(businessId)
+                .orElseThrow(() -> new ResourceNotFoundException("Business not found, please create a business first"));
+
+        Customer customer = customerRepository.findByIdAndBusinessId(customerId, businessId)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+
+        customer.setStatus(Status.DELETED);
+        customer.setDeletedAt(LocalDateTime.now());
+        customer.setDeletedBy(getCurrentBusinessOwner().getId());
+
+        customerRepository.save(customer);
+
+        return "Customer deleted successfully";
+    }
+
 
     private BusinessOwner getCurrentBusinessOwner() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

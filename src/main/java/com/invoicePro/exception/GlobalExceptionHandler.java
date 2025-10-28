@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -26,6 +27,30 @@ public class GlobalExceptionHandler {
                         Response.builder()
                                 .status(HttpStatus.BAD_REQUEST.value())
                                 .errors(exception.getErrors())
+                                .build());
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Response> handleAllIllegalArgumentException(IllegalArgumentException exception) {
+
+        log.error("An Illegal Argument error occurred", exception);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(
+                        Response.builder()
+                                .status(HttpStatus.BAD_REQUEST.value())
+                                .errors(List.of(exception.getMessage()))
+                                .build());
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Response> handleAllHttpMessageNotReadableException(HttpMessageNotReadableException exception) {
+
+        log.error("An Http method not readable error occurred", exception);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(
+                        Response.builder()
+                                .status(HttpStatus.BAD_REQUEST.value())
+                                .errors(List.of(exception.getMessage()))
                                 .build());
     }
 
