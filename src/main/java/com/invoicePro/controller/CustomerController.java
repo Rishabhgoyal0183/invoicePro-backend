@@ -1,7 +1,9 @@
 package com.invoicePro.controller;
 
 import com.invoicePro.dto.CustomerByIdDTO;
+import com.invoicePro.dto.CustomerMetricsDTO;
 import com.invoicePro.dto.CustomersDTO;
+import com.invoicePro.dto.ProductMetricsDTO;
 import com.invoicePro.request.PaginationRequest;
 import com.invoicePro.request.SaveCustomerRequest;
 import com.invoicePro.response.PageResponse;
@@ -100,6 +102,17 @@ public class CustomerController {
             String message = customerService.softDeleteCustomer(businessId, customerId);
             return ResponseUtils.data(message);
         } catch (Exception exception) {
+            return ExceptionUtils.handleException(exception);
+        }
+    }
+
+    @GetMapping("/customers/metrics")
+    public ResponseEntity<Response> getCustomersMetrics(@PathVariable long businessId) {
+
+        try {
+            CustomerMetricsDTO customerMetricsDTO = customerService.getCustomersMetrics(businessId);
+            return ResponseUtils.data(customerMetricsDTO);
+        }catch (Exception exception){
             return ExceptionUtils.handleException(exception);
         }
     }

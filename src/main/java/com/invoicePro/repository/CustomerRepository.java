@@ -1,6 +1,7 @@
 package com.invoicePro.repository;
 
 import com.invoicePro.entity.Customer;
+import com.invoicePro.enums.CustomerType;
 import com.invoicePro.enums.Status;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,4 +21,10 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     Optional<Customer> findByIdAndBusinessId(long customerId, long businessId);
 
     Optional<Customer> findByNameAndBusinessIdAndIdNot(String name, long businessId, long customerId);
+
+    long countByBusinessIdAndStatusNot(long businessId, Status status);
+
+    long countByBusinessIdAndStatus(long businessId, Status status);
+
+    long countByBusinessIdAndCustomerType(long businessId, CustomerType customerType);
 }

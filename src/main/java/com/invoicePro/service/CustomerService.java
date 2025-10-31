@@ -1,6 +1,7 @@
 package com.invoicePro.service;
 
 import com.invoicePro.dto.CustomerByIdDTO;
+import com.invoicePro.dto.CustomerMetricsDTO;
 import com.invoicePro.dto.CustomersDTO;
 import com.invoicePro.request.PaginationRequest;
 import com.invoicePro.request.SaveCustomerRequest;
@@ -19,4 +20,6 @@ public interface CustomerService {
     String changeCustomerStatus(long businessId, long customerId);
 
     String softDeleteCustomer(long businessId, long customerId);
+
+    CustomerMetricsDTO getCustomersMetrics(long businessId);
 }
