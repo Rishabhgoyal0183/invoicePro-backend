@@ -2,7 +2,6 @@ package com.invoicePro.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 
 import java.util.Locale;
 
@@ -51,7 +50,7 @@ public enum State {
             return State.valueOf(normalized);
         } catch (Exception e) {
             // Throwing IllegalArgumentException causes Jackson to produce a 400 (HttpMessageNotReadableException)
-            throw new HttpMessageNotReadableException("Invalid state value: '" + raw + "'. Allowed states: " + String.join(", ", State.names()));
+            throw new IllegalArgumentException("Invalid state value: '" + raw + "'. Allowed states: " + String.join(", ", State.names()));
         }
     }
 
@@ -71,5 +70,4 @@ public enum State {
         for (int i = 0; i < vals.length; i++) out[i] = vals[i].name();
         return out;
     }
-
 }
