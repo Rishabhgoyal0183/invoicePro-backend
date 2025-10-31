@@ -1,5 +1,6 @@
 package com.invoicePro.service.impl;
 
+import com.invoicePro.dto.ProductMetricsDTO;
 import com.invoicePro.dto.ProductsDTO;
 import com.invoicePro.entity.BusinessOwner;
 import com.invoicePro.entity.Product;
@@ -112,6 +113,24 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found, please add the product first"));
         productRepository.delete(product);
         return "Product deleted successfully";
+    }
+
+    @Override
+    public ProductMetricsDTO getProductMetrics(long businessId) {
+
+        businessRepository.findById(businessId)
+                .orElseThrow(() -> new ResourceNotFoundException("Business not found, please create a business first"));
+
+        long totalProducts = productRepository.countByBusinessId(businessId);
+        long lowStockProducts = productRepository.countByBusinessIdAndStockLessThan(businessId, 10);
+        Double totalInventoryValue = productRepository.calculateTotalInventoryValue(businessId);
+
+        ProductMetricsDTO productMetricsDTO = new ProductMetricsDTO();
+        productMetricsDTO.setTotalProductCount(totalProducts);
+        productMetricsDTO.setLowStockProductCount(lowStockProducts);
+        productMetricsDTO.setTotalInventoryValue(totalInventoryValue);
+
+        return productMetricsDTO;
     }
 
     private void validateCategoryAndUom(SaveProductRequest saveProductRequest, Product product) {

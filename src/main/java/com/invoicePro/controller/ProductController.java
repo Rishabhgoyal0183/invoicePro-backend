@@ -1,5 +1,6 @@
 package com.invoicePro.controller;
 
+import com.invoicePro.dto.ProductMetricsDTO;
 import com.invoicePro.dto.ProductsDTO;
 import com.invoicePro.request.PaginationRequest;
 import com.invoicePro.request.SaveProductRequest;
@@ -85,6 +86,17 @@ public class ProductController {
         try {
             String message = productService.deleteProduct(businessId, productId);
             return ResponseUtils.data(message);
+        }catch (Exception exception){
+            return ExceptionUtils.handleException(exception);
+        }
+    }
+
+    @GetMapping("/metrics")
+    public ResponseEntity<Response> getProductMetrics(@PathVariable long businessId) {
+
+        try {
+            ProductMetricsDTO productMetricsDTO = productService.getProductMetrics(businessId);
+            return ResponseUtils.data(productMetricsDTO);
         }catch (Exception exception){
             return ExceptionUtils.handleException(exception);
         }

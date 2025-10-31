@@ -1,5 +1,6 @@
 package com.invoicePro.service;
 
+import com.invoicePro.dto.ProductMetricsDTO;
 import com.invoicePro.dto.ProductsDTO;
 import com.invoicePro.request.PaginationRequest;
 import com.invoicePro.request.SaveProductRequest;
@@ -15,4 +16,6 @@ public interface ProductService {
     String updateProduct(long businessId, long productId, SaveProductRequest saveProductRequest);
 
     String deleteProduct(long businessId, long productId);
+
+    ProductMetricsDTO getProductMetrics(long businessId);
 }

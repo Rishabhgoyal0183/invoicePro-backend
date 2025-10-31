@@ -1,6 +1,7 @@
 package com.invoicePro.service.impl;
 
 import com.invoicePro.dto.CustomerByIdDTO;
+import com.invoicePro.dto.CustomerMetricsDTO;
 import com.invoicePro.dto.CustomersDTO;
 import com.invoicePro.entity.BusinessOwner;
 import com.invoicePro.entity.Customer;
@@ -177,6 +178,27 @@ public class CustomerServiceImpl implements CustomerService {
         customerRepository.save(customer);
 
         return "Customer deleted successfully";
+    }
+
+    @Override
+    public CustomerMetricsDTO getCustomersMetrics(long businessId) {
+        businessRepository.findById(businessId)
+                .orElseThrow(() -> new ResourceNotFoundException("Business not found, please create a business first"));
+
+        long totalCustomers = customerRepository.countByBusinessIdAndStatusNot(businessId, Status.DELETED);
+        long activeCustomers = customerRepository.countByBusinessIdAndStatus(businessId, Status.ACTIVE);
+        long inactiveCustomers = customerRepository.countByBusinessIdAndStatus(businessId, Status.INACTIVE);
+        long retailCustomers = customerRepository.countByBusinessIdAndCustomerType(businessId, CustomerType.RETAIL);
+        long wholesaleCustomers = customerRepository.countByBusinessIdAndCustomerType(businessId, CustomerType.WHOLESALE);
+
+        CustomerMetricsDTO customerMetricsDTO = new CustomerMetricsDTO();
+        customerMetricsDTO.setTotalCustomers(totalCustomers);
+        customerMetricsDTO.setActiveCustomers(activeCustomers);
+        customerMetricsDTO.setInactiveCustomers(inactiveCustomers);
+        customerMetricsDTO.setRetailCustomers(retailCustomers);
+        customerMetricsDTO.setWholesaleCustomers(wholesaleCustomers);
+
+        return customerMetricsDTO;
     }
 
 
