@@ -34,7 +34,7 @@ public class AuthController {
     }
 
     @GetMapping("/logout")
-    public ResponseEntity<?> logout(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<Response> logout(@RequestHeader("Authorization") String token) {
 
         try {
             authService.logout(token);

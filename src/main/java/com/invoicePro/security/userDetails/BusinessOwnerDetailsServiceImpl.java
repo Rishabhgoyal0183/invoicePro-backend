@@ -3,6 +3,7 @@ package com.invoicePro.security.userDetails;
 import com.invoicePro.entity.BusinessOwner;
 import com.invoicePro.repository.BusinessOwnerRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Example;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
