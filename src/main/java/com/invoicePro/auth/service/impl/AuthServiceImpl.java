@@ -44,20 +44,21 @@ public class AuthServiceImpl implements AuthService {
         // Set authentication in the security context
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
+        BusinessOwnerDetails businessOwnerDetails = (BusinessOwnerDetails) authentication.getPrincipal();
+
         // Create user session
-        UserSession userSession = userSessionService.createSession(authentication);
+        UserSession userSession = userSessionService.createSession(businessOwnerDetails);
 
         // Generate JWT
-        String jwt = jwtUtils.generateJwtToken(authentication, userSession.getSessionId(), userSession.getExpiresAt());
+        String jwt = jwtUtils.generateJwtToken(businessOwnerDetails, userSession.getSessionId(), userSession.getExpiresAt());
 
         // Get user details
-        BusinessOwnerDetails businessOwnerDetails = (BusinessOwnerDetails) authentication.getPrincipal();
         BusinessOwner businessOwner = businessOwnerRepository.findById(businessOwnerDetails.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Business Owner not found"));
 
         List<Business> businessList = businessRepository.findByOwner(businessOwner);
 
-        if (!businessList.isEmpty()){
+        if (!businessList.isEmpty()) {
             // Create AuthResponse with user details and JWT
             AuthResponse authResponse = new AuthResponse();
             authResponse.setAccessToken(jwt);

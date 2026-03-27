@@ -45,7 +45,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/login",
                                 "/api/auth/google/**",
                                 "/api/auth/onboarding/**",
-                                "/api/auth/change-password" ,
+                                "/api/auth/change-password",
+                                "/api/auth/login-with-google",
                                 "/error")
                         .permitAll()
                         .anyRequest()

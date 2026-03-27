@@ -29,9 +29,7 @@ public class UserSessionService {
 
     private static final int SESSION_ID_LENGTH = 10;
 
-    public UserSession createSession(Authentication authentication) {
-
-        BusinessOwnerDetails businessOwnerDetails = (BusinessOwnerDetails) authentication.getPrincipal();
+    public UserSession createSession(BusinessOwnerDetails businessOwnerDetails) {
 
           // delete records from user_sessions by user id
 //        userSessionRepository.deleteByUserId(userPrincipal.getId());
