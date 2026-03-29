@@ -3,13 +3,14 @@ package com.invoicePro.auth.controller;
 import com.invoicePro.auth.request.ChangePasswordRequest;
 import com.invoicePro.auth.request.OnboardingRequest;
 import com.invoicePro.auth.service.GoogleAuthService;
+import com.invoicePro.response.AuthResponse;
 import com.invoicePro.response.Response;
 import com.invoicePro.utils.ExceptionUtils;
 import com.invoicePro.utils.ResponseUtils;
 import com.invoicePro.validator.RequestValidator;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,10 +20,22 @@ import org.springframework.web.bind.annotation.*;
 public class GoogleAuthController {
     private final GoogleAuthService googleAuthService;
 
-    @GetMapping("/google/verify-email")
+    @PostMapping("/login-with-google")
+    public ResponseEntity<Response> loginWithGoogle(@RequestParam String authorizationCode) {
+
+        try {
+            AuthResponse authResponse = googleAuthService.loginWithGoogle(authorizationCode);
+            return ResponseUtils.data(authResponse);
+        } catch (Exception exception) {
+            return ExceptionUtils.handleException(exception);
+        }
+    }
+
+
+    @GetMapping("/google/register-user")
     public ResponseEntity<Response> handleSignUp(@RequestParam String authorizationCode) {
         try {
-            String emailId = googleAuthService.handleSignUp(authorizationCode);
+            String emailId = googleAuthService.handleSignUp(authorizationCode, true);
 
             return ResponseUtils.data(emailId);
         } catch (Exception exception) {

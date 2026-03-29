@@ -4,7 +4,6 @@ import com.invoicePro.security.userDetails.BusinessOwnerDetails;
 import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -20,9 +19,7 @@ public class JwtUtils {
     @Value("${invoicePro.app.jwtExpirationMs}")
     private Long jwtExpirationMs;
 
-    public String generateJwtToken(Authentication authentication, String sessionId, Date jwtExpirationMs) {
-
-        BusinessOwnerDetails businessOwnerDetails = (BusinessOwnerDetails) authentication.getPrincipal();
+    public String generateJwtToken(BusinessOwnerDetails businessOwnerDetails, String sessionId, Date jwtExpirationMs) {
 
         return Jwts.builder()
                 .setSubject((businessOwnerDetails.getEmail()))

@@ -2,15 +2,18 @@ package com.invoicePro.auth.service;
 
 import com.invoicePro.auth.request.ChangePasswordRequest;
 import com.invoicePro.auth.request.OnboardingRequest;
+import com.invoicePro.response.AuthResponse;
 import org.apache.coyote.BadRequestException;
 
 public interface GoogleAuthService {
 
-    String handleSignUp(String authorizationCode) throws BadRequestException;
+    String handleSignUp(String authorizationCode, boolean isRegistering) throws BadRequestException;
 
     String onboardBusinessAndOwnerDetails(OnboardingRequest onboardingRequest);
 
     String forgotPassword(String authorizationCode) throws BadRequestException;
 
     String changePassword(String passwordResetToken, ChangePasswordRequest changePasswordRequest) throws BadRequestException;
+
+    AuthResponse loginWithGoogle(String authorizationCode) throws BadRequestException;
 }
